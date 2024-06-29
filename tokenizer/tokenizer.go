@@ -34,15 +34,59 @@ func GetStats(tokens []int) map[[2]int]int {
 }
 
 // TODO: Check if all pairs are as common as each other
-func GetMostCommonBytePair(stats *map[[2]int]int) ([2]int, int) {
-	var mostCommon [2]int
+func getTopBytePair(stats *map[[2]int]int) ([2]int, int) {
+	var topPair [2]int
 	count := 1
 	for k, v := range *stats {
 		if v > count {
 			count = v
-			mostCommon = k
+			topPair = k
 		}
 	}
 
-	return mostCommon, count
+	return topPair, count
+}
+
+func merge(tokens []int, pair [2]int, newToken int) []int {
+	newTokens := []int{}
+
+	i := 0
+	for i < len(tokens) {
+		if i < len(tokens)-1 && pair[0] == tokens[i] && pair[1] == tokens[i+1] {
+			newTokens = append(newTokens, newToken)
+			i += 2
+		} else {
+			newTokens = append(newTokens, tokens[i])
+			i += 1
+		}
+	}
+
+	return newTokens
+}
+
+func BytePairStep(tokens []int, newToken int) []int {
+	stats := GetStats(tokens)
+	topPair, _ := getTopBytePair(&stats)
+	newTokens := merge(tokens, topPair, newToken)
+
+	return newTokens
+}
+
+func BytePairEncoding(tokens []int, vocabSize int) ([]int, map[[2]int]int) {
+	merges := make(map[[2]int]int)
+
+	numMerges := vocabSize - 256
+	i := 0
+	for i < numMerges {
+		newToken := 256 + i
+		stats := GetStats(tokens)
+		topPair, _ := getTopBytePair(&stats)
+		tokens = merge(tokens, topPair, newToken)
+
+		merges[topPair] = newToken
+
+		i += 1
+	}
+
+	return tokens, merges
 }
