@@ -1,5 +1,9 @@
 package tokenizer
 
+import (
+	"sort"
+)
+
 func encodeUTF8Conversion(str string) []byte {
 	return []byte(str)
 }
@@ -82,11 +86,49 @@ func BytePairEncoding(tokens []int, vocabSize int) ([]int, map[[2]int]int) {
 		stats := GetStats(tokens)
 		topPair, _ := getTopBytePair(&stats)
 		tokens = merge(tokens, topPair, newToken)
-
+		// fmt.Println("Merging", topPair, "into a new token", newToken)
 		merges[topPair] = newToken
 
 		i += 1
 	}
 
 	return tokens, merges
+}
+
+func intSliceToByteSlice(ints []int) []byte {
+	bytes := make([]byte, len(ints))
+	for i, v := range ints {
+		bytes[i] = byte(v)
+	}
+
+	return bytes
+}
+
+func Decode(tokens []int, mergeMap map[[2]int]int) string {
+	// It is necessary to replace more recent merges (higher tokens) first.
+	orderedKeys := make([][2]int, 0, len(mergeMap))
+	for key := range mergeMap {
+		orderedKeys = append(orderedKeys, key)
+	}
+	sort.SliceStable(orderedKeys, func(i, j int) bool {
+		return mergeMap[orderedKeys[i]] > mergeMap[orderedKeys[j]]
+	})
+
+	// Go over merge map from more recent to less recent
+	for _, k := range orderedKeys {
+		currentMapToken := mergeMap[k]
+		newTokens := []int{}
+		// Swap generated tokens for their original ones.
+		for _, token := range tokens {
+			if token == currentMapToken {
+				newTokens = append(newTokens, k[:]...)
+			} else {
+				newTokens = append(newTokens, token)
+			}
+		}
+
+		tokens = newTokens
+	}
+
+	return string(intSliceToByteSlice(tokens))
 }

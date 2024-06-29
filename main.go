@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"time"
 
 	gogpt "github.com/deboradum/GoPT-tokenizer/tokenizer"
 )
@@ -11,15 +12,13 @@ func main() {
 
 	tokens := gogpt.EncodeConversion(text)
 
-	// start := time.Now()
-	newTokens, _ := gogpt.BytePairEncoding(tokens, 276)
-	// fmt.Println(time.Since(start))
+	start := time.Now()
+	newTokens, merges := gogpt.BytePairEncoding(tokens, 276)
+	fmt.Println("Time taken to train:", time.Since(start))
 
 	fmt.Println("Original token length:", len(tokens), "; New token length:", len(newTokens), "; Compression ratio:", float32(len(tokens))/float32(len(newTokens)))
-	// fmt.Println(merges)
 
-	// for k, v := range merges {
-	// 	fmt.Println(k, v)
-
-	// }
+	start = time.Now()
+	gogpt.Decode(newTokens, merges)
+	fmt.Println("Time taken to decode:", time.Since(start))
 }
