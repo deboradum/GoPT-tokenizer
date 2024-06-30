@@ -40,7 +40,6 @@ func generateVocab(mergeMap map[[2]int]int) map[int][]byte {
 	return vocab
 }
 
-// TODO do not give mergemap and make vocab, but just take vocab as parameter
 func Decode(tokens []int, vocab map[int][]byte) string {
 	newTokens := []int{}
 	for _, t := range tokens {
