@@ -1,5 +1,7 @@
 package gogpt
 
+import "fmt"
+
 func encodeUTF8Conversion(str string) []byte {
 	return []byte(str)
 }
@@ -33,14 +35,13 @@ func GetStats(tokens []int) map[[2]int]int {
 	return stats
 }
 
-// TODO: Check if all pairs are as common as each other
 func getTopBytePair(stats *map[[2]int]int) ([2]int, int) {
 	var topPair [2]int
 	count := 1
-	for k, v := range *stats {
-		if v > count {
-			count = v
-			topPair = k
+	for pair, pairCount := range *stats {
+		if pairCount >= count {
+			count = pairCount
+			topPair = pair
 		}
 	}
 
@@ -82,11 +83,19 @@ func BytePairEncoding(tokens []int, vocabSize int) ([]int, map[[2]int]int) {
 		stats := GetStats(tokens)
 		topPair, _ := getTopBytePair(&stats)
 		tokens = merge(tokens, topPair, newToken)
-		// fmt.Println("Merging", topPair, "into a new token", newToken)
 		merges[topPair] = newToken
 
 		i += 1
 	}
 
 	return tokens, merges
+}
+
+func Train(text string, vocabSize int) (map[[2]int]int, map[int][]byte) {
+	tokens := EncodeConversion(text)
+	newTokens, merges := BytePairEncoding(tokens, vocabSize)
+	vocab := GenerateVocab(merges)
+	fmt.Println("Original token length:", len(tokens), "; New token length:", len(newTokens), "; Compression ratio:", float32(len(tokens))/float32(len(newTokens)))
+
+	return merges, vocab
 }
