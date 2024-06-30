@@ -18,7 +18,17 @@ func main() {
 
 	fmt.Println("Original token length:", len(tokens), "; New token length:", len(newTokens), "; Compression ratio:", float32(len(tokens))/float32(len(newTokens)))
 
+	toDecode := "Dauer-TiefpreisWir bieten Ihnen den besten Preis für vergleichbare Leistung unserer VPS-Angebote. Finden Sie einen vergleichbaren vServer bei einem anderen Anbieter günstiger, wenden Sie sich bitte vor der Bestellung an unseren Support. Sollte der Vergleich zutreffen, rabattieren wir unseren Dauer-Tiefpreis noch einmal um unschlagbare 10%. Dies ist nicht auf Angebote aus Deutschland beschränkt.besterpreisnetcup SCP Appnetcup SCP AppDie netcup SCP App bietet Ihnen die Möglichkeit jederzeit und von überall auf Ihre Root-Server, vServer und Storages zuzugreifen. Neben den Statistiken und Protokollen ermöglicht die App eine allgemeine Übersicht und Steuerung Ihrer Server. Laden Sie sich die netcup SCP App jetzt über den Google Play Store oder den App Store kostenlos auf Ihr Smartphone.Jetzt im App StoreJetzt bei Google PlayFrequently Asked QuestionsWas ist ein VPS?Ein VPS (Virtual Private Server), auch bekannt als vServer, ist eine virtuelle Maschine, die auf einem physischen Server gehostet wird und es Benutzern ermöglicht, isolierte Serverumgebungen mit eigenen Betriebssystemen und Anwendungen zu nutzen. VPS bieten Flexibilität und Kontrolle ähnlich dedizierten Servern, jedoch zu einem erschwinglichen Preis. Sie sind ideal für Nutzer, die einen eigenen Server benötigen, aber nicht die Kosten und die Verwaltung eines physischen Servers tragen möchten.Was kann ich mit einem VPS machen?Mit einem vServer haben Sie die Möglichkeit, verschiedene Aufgaben auszuführen, darunter Webhosting, Datenbankverwaltung, Gaming Server, Entwicklungsumgebungen und mehr. Ein VPS bietet eine skalierbare und anpassbare Plattform für eine Vielzahl von Anwendungen, sowohl für Linux als auch für Windows-Betriebssysteme.Was ist der Unterschied zwischen einem VPS x86, VPS ARM64 und Root-Server?Ein VPS x86 basiert auf der x86-Architektur und ist ideal für eine breite Palette von Anwendungen geeignet. Ein VPS ARM verwendet die ARM-Architektur und ist besonders effizient für spezielle Workloads wie IoT-Anwendungen oder Edge Computing. Ein Root-Server definiert sich durch einen vollständigen administrativen Zugriff (Root-Zugriff). Demzufolge setzt es Kenntnisse in der Administration von Serversystemen voraus."
 	start = time.Now()
-	gogpt.Decode(newTokens, merges)
+	tokenized := gogpt.Encode(toDecode, merges)
+	fmt.Println("Time taken to encode:", time.Since(start))
+
+	start = time.Now()
+	decoded := gogpt.Decode(tokenized, merges)
+	// gogpt.Encode("A constitution is the aggregate of fundamental principles or established precedents", merges)
 	fmt.Println("Time taken to decode:", time.Since(start))
+
+	// fmt.Println(toDecode)
+	// fmt.Println(decoded)
+	fmt.Println(toDecode == decoded)
 }
