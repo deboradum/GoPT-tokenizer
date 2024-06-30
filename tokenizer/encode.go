@@ -25,9 +25,9 @@ func getPairToTokenize(stats *map[[2]int]int, mergeMap map[[2]int]int) ([2]int, 
 }
 
 func Encode(text string, mergeMap map[[2]int]int) []int {
-	tokens := EncodeConversion(text)
+	tokens := encodeConversion(text)
 	for {
-		stats := GetStats(tokens)
+		stats := getStats(tokens)
 		pair, newToken, err := getPairToTokenize(&stats, mergeMap)
 		// When nothing can be merged
 		if err != nil {

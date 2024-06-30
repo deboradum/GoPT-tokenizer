@@ -25,7 +25,7 @@ func encodeConversion(str string) []int {
 	return bytesToInts(encodeUTF8Conversion(str))
 }
 
-func GetStats(tokens []int) map[[2]int]int {
+func getStats(tokens []int) map[[2]int]int {
 	stats := make(map[[2]int]int)
 	for i := range tokens[:len(tokens)-1] {
 		pair := [2]int{tokens[i], tokens[i+1]}
@@ -85,14 +85,6 @@ func merge(tokens []int, pair [2]int, newToken int) []int {
 	return newTokens
 }
 
-func bytePairStep(tokens []int, newToken int) []int {
-	stats := GetStats(tokens)
-	topPair, _ := getTopBytePair(&stats)
-	newTokens := merge(tokens, topPair, newToken)
-
-	return newTokens
-}
-
 func bytePairEncoding(tokens []int, vocabSize int) ([]int, map[[2]int]int) {
 	merges := make(map[[2]int]int)
 
@@ -100,7 +92,7 @@ func bytePairEncoding(tokens []int, vocabSize int) ([]int, map[[2]int]int) {
 	i := 0
 	for i < numMerges {
 		newToken := 256 + i
-		stats := GetStats(tokens)
+		stats := getStats(tokens)
 		topPair, _ := getTopBytePair(&stats)
 		tokens = merge(tokens, topPair, newToken)
 		merges[topPair] = newToken
@@ -114,7 +106,7 @@ func bytePairEncoding(tokens []int, vocabSize int) ([]int, map[[2]int]int) {
 func Train(text string, vocabSize int) (map[[2]int]int, map[int][]byte) {
 	tokens := encodeConversion(text)
 	newTokens, merges := bytePairEncoding(tokens, vocabSize)
-	vocab := GenerateVocab(merges)
+	vocab := generateVocab(merges)
 	fmt.Println("Original token length:", len(tokens), "; New token length:", len(newTokens), "; Compression ratio:", float32(len(tokens))/float32(len(newTokens)))
 
 	return merges, vocab

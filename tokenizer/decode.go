@@ -26,7 +26,7 @@ func getOrderedMerges(mergeMap map[[2]int]int) [][2]int {
 	return orderedKeys
 }
 
-func GenerateVocab(mergeMap map[[2]int]int) map[int][]byte {
+func generateVocab(mergeMap map[[2]int]int) map[int][]byte {
 	vocab := make(map[int][]byte)
 	i := 0
 	for i < 256 {
