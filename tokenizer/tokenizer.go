@@ -1,6 +1,11 @@
 package gogpt
 
-import "fmt"
+import (
+	"encoding/gob"
+	"errors"
+	"fmt"
+	"os"
+)
 
 func encodeUTF8Conversion(str string) []byte {
 	return []byte(str)
@@ -103,11 +108,113 @@ func bytePairEncoding(tokens []int, vocabSize int) ([]int, map[[2]int]int) {
 	return tokens, merges
 }
 
-func Train(text string, vocabSize int) (map[[2]int]int, map[int][]byte) {
+func saveVocab(name string, vocab map[int][]byte) error {
+	filename := name + ".vocab"
+	if _, err := os.Stat(filename); err == nil {
+		return errors.New("file already exists")
+	}
+
+	file, err := os.Create(filename)
+	if err != nil {
+		fmt.Println("Error creating file:", err)
+		return err
+	}
+	defer file.Close()
+
+	encoder := gob.NewEncoder(file)
+	err = encoder.Encode(vocab)
+	if err != nil {
+		fmt.Println("Error encoding merges:", err)
+		return err
+	}
+
+	return nil
+}
+
+func saveMerges(name string, merges map[[2]int]int) error {
+	filename := name + ".bpe"
+	if _, err := os.Stat(filename); err == nil {
+		return errors.New("file already exists")
+	}
+
+	file, err := os.Create(filename)
+	if err != nil {
+		fmt.Println("Error creating file:", err)
+		return err
+	}
+	defer file.Close()
+
+	encoder := gob.NewEncoder(file)
+	err = encoder.Encode(merges)
+	if err != nil {
+		fmt.Println("Error encoding merges:", err)
+		return err
+	}
+
+	return nil
+}
+
+func readMerges(filename string) (map[[2]int]int, error) {
+	var merges map[[2]int]int
+	file, err := os.Open(filename)
+	if err != nil {
+		fmt.Println("Error opening file:", err)
+		return merges, err
+	}
+	defer file.Close()
+
+	decoder := gob.NewDecoder(file)
+	err = decoder.Decode(&merges)
+	if err != nil {
+		fmt.Println("Error decoding map:", err)
+		return merges, err
+	}
+
+	return merges, nil
+}
+
+func readVocab(filename string) (map[int][]byte, error) {
+	var vocab map[int][]byte
+	file, err := os.Open(filename)
+	if err != nil {
+		fmt.Println("Error opening file:", err)
+		return vocab, err
+	}
+	defer file.Close()
+
+	decoder := gob.NewDecoder(file)
+	err = decoder.Decode(&vocab)
+	if err != nil {
+		fmt.Println("Error decoding map:", err)
+		return vocab, err
+	}
+
+	return vocab, nil
+}
+
+func Train(text string, vocabSize int, dataName string) (map[[2]int]int, map[int][]byte) {
 	tokens := encodeConversion(text)
 	newTokens, merges := bytePairEncoding(tokens, vocabSize)
 	vocab := generateVocab(merges)
 	fmt.Println("Original token length:", len(tokens), "; New token length:", len(newTokens), "; Compression ratio:", float32(len(tokens))/float32(len(newTokens)))
 
+	saveMerges(dataName, merges)
+	saveVocab(dataName, vocab)
+
 	return merges, vocab
+}
+
+func LoadTokenizer(mergesPath string, vocabPath string) (map[[2]int]int, map[int][]byte, error) {
+	merges, err := readMerges(mergesPath)
+	if err != nil {
+		fmt.Println("Error loading merges:", err)
+		return make(map[[2]int]int), make(map[int][]byte), err
+	}
+	vocab, err := readVocab(vocabPath)
+	if err != nil {
+		fmt.Println("Error loading vocab:", err)
+		return make(map[[2]int]int), make(map[int][]byte), err
+	}
+
+	return merges, vocab, nil
 }

@@ -1,1 +1,4 @@
 gogpt
+
+*.bpe
+*.vocab
