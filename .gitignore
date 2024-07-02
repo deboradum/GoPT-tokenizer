@@ -2,3 +2,4 @@ gogpt
 
 *.bpe
 *.vocab
+.DS_Store
